@@ -1,0 +1,39 @@
+---
+title: "ling460_model"
+output: html_document
+---
+
+```{r, warning=FALSE}
+# loading libraries
+library(readr)
+library(stringr)
+library(tidyverse)
+library(dplyr)
+library(car)
+```
+
+```{r}
+# reading in the data 
+data <- read_csv("final_dataset/Data/output/income_mortality_aqi.csv")
+```
+
+```{r}
+# filtering for the model 
+data <- data %>%
+  select(-c(FIPS, subregion, STATE_FIPS, State, County, County, CNTY_FIPS))
+
+# cleaning the rank column to only include the state's ranking
+data$Rank.within.US <- data$Rank.within.US %>%
+  str_extract("\\d+") %>%
+  as.numeric()
+  
+# creating first model 
+full <- lm(Deaths ~ region + Good.Days + Moderate.Days + Unhealthy.for.Sensitive.Groups.Days + Unhealthy.Days + Very.Unhealthy.Days + Hazardous.Days + Median.AQI + Days.CO + Days.NO2 + Days.Ozone + Days.PM2.5 + Value..Dollars., data = data)
+summary(full)
+# statistically significant variables are moderate days, unhealthy for sensitive group days, very unhealthy days, hazardous days and median income
+
+# checking for multicollinearity 
+car::vif(full)
+# looks like region is colinear and so is median AQI and days ozone
+```
+
